@@ -62,18 +62,19 @@ class LoginService {
     }
 
     @Throws(AuthException::class)
-    fun hasAuth(tokenObj: Token?, roles: List<AuthEnum>){
+    fun hasAuth(tokenObj: Token?, roles: List<AuthEnum>) {
         tokenObj ?: throw AuthException("user not login or token has expired")
-        if(AuthEnum.valueOf(tokenObj.auth) in roles){
+        if (AuthEnum.valueOf(tokenObj.auth) in roles) {
             return
-        }else{
+        } else {
             logger.info("user ${tokenObj.username} failed to pass the auth check")
             throw AuthException("this operation is not allowed as role of ${tokenObj.auth}")
         }
     }
 
-    fun getToken(token: String): Token? {
-        return tokenRedisTemplate.opsForValue().get(token)
+    @Throws(AuthException::class)
+    fun getToken(token: String): Token {
+        return tokenRedisTemplate.opsForValue().get(token) ?: throw AuthException("not logged in or token expired")
     }
 
 }

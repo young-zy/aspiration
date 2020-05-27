@@ -20,7 +20,7 @@ class AspirationService {
 
     @Throws(AuthException::class)
     suspend fun updateAspiration(token: String, plan_id1: Int, adjust1: Boolean, plan_id2: Int, adjust2: Boolean, plan_id3: Int, adjust3: Boolean){
-        val tokenObj = loginService.getToken(token) ?: throw AuthException("not logged in")
+        val tokenObj = loginService.getToken(token)
         loginService.hasAuth(tokenObj, listOf(AuthEnum.STUDENT))
         aspirationNativeRepository.updateAspirationByUid(
                 tokenObj.uid,
