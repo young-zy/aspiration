@@ -40,7 +40,7 @@ class LoginService {
             val tokenStr = longToken.toString(16)
             val token = Token(
                     "$username:$tokenStr",
-                    user.uid,
+                    user.uid!!,
                     user.username,
                     user.auth,
                     user.region
