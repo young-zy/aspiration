@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository
 @Repository
 class UserNativeRepository {
 
-    @Autowired lateinit var r2dbcDatabaseClient: DatabaseClient
+    @Autowired
+    private lateinit var r2dbcDatabaseClient: DatabaseClient
 
     suspend fun getUser(username: String): UserEntity? {
         return r2dbcDatabaseClient.execute("select * from user where username = :username")
@@ -45,5 +46,11 @@ class UserNativeRepository {
                 .awaitFirstOrNull()
     }
 
-
+    suspend fun insertUser(user: UserEntity): Void? {
+        return r2dbcDatabaseClient.insert()
+                .into(UserEntity::class.java)
+                .using(user)
+                .then()
+                .awaitFirstOrNull()
+    }
 }
