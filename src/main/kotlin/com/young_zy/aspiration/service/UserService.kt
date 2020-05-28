@@ -8,9 +8,18 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserService {
-    @Autowired private lateinit var userNativeRepository: UserNativeRepository
+    @Autowired
+    private lateinit var userNativeRepository: UserNativeRepository
 
-    @Autowired private lateinit var loginService: LoginService
+    @Autowired
+    private lateinit var loginService: LoginService
+
+    @Autowired
+    private lateinit var transactionalOperator: TransactionalOperator
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+    }
 
     @Throws(AuthException::class)
     suspend fun getScore(token: String): MutableMap<String, Any> {
