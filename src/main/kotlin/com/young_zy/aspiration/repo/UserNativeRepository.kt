@@ -1,14 +1,11 @@
 package com.young_zy.aspiration.repo
 
 import com.young_zy.aspiration.model.UserEntity
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.DatabaseClient
-import org.springframework.data.r2dbc.core.FetchSpec
 import org.springframework.data.r2dbc.core.awaitOneOrNull
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @Repository
 class UserNativeRepository {
@@ -19,6 +16,14 @@ class UserNativeRepository {
         return r2dbcDatabaseClient.execute("select * from user where username = :username")
                 .`as`(UserEntity::class.java)
                 .bind("username", username)
+                .fetch()
+                .awaitOneOrNull()
+    }
+
+    suspend fun getUser(uid: Int): UserEntity? {
+        return r2dbcDatabaseClient.execute("select * from user where username = :uid")
+                .`as`(UserEntity::class.java)
+                .bind("uid", uid)
                 .fetch()
                 .awaitOneOrNull()
     }
@@ -37,7 +42,7 @@ class UserNativeRepository {
                 .table(UserEntity::class.java)
                 .using(user)
                 .then()
-                .awaitSingle()
+                .awaitFirstOrNull()
     }
 
 
