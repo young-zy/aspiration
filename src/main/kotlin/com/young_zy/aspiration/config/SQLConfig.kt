@@ -3,7 +3,7 @@ package com.young_zy.aspiration.config
 import com.young_zy.aspiration.config.properties.SQLProperties
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.pool.ConnectionPoolConfiguration
-import io.r2dbc.pool.PoolingConnectionFactoryProvider.*
+import io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_SIZE
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryOptions.*
@@ -16,6 +16,7 @@ import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import org.springframework.transaction.reactive.TransactionalOperator
 import java.time.Duration
 
 @Configuration
@@ -35,9 +36,6 @@ class SQLConfig(@Autowired final val sqlProperties: SQLProperties): AbstractR2db
                     .build()
     )
 
-    @Qualifier("connectionFactory")
-    @Autowired lateinit var connectionFactory:ConnectionFactory
-
     @Bean
     override fun connectionFactory(): ConnectionFactory{
         return ConnectionPool(
@@ -51,12 +49,23 @@ class SQLConfig(@Autowired final val sqlProperties: SQLProperties): AbstractR2db
     }
 
     @Bean
-    fun transactionManager(): R2dbcTransactionManager {
+    fun transactionManager(
+            @Qualifier("connectionFactory")
+            connectionFactory: ConnectionFactory
+    ): R2dbcTransactionManager {
         return R2dbcTransactionManager(connectionFactory)
     }
 
     @Bean
-    fun r2dbcDatabaseClient(): DatabaseClient{
+    fun transactionOperator(transactionManager: R2dbcTransactionManager): TransactionalOperator {
+        return TransactionalOperator.create(transactionManager)
+    }
+
+    @Bean
+    fun r2dbcDatabaseClient(
+            @Qualifier("connectionFactory")
+            connectionFactory: ConnectionFactory
+    ): DatabaseClient {
         return DatabaseClient.create(connectionFactory)
     }
 }
