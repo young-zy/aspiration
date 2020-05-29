@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.ResponseStatusException
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -48,7 +49,7 @@ class ExceptionHandler {
     }
 
     @ExceptionHandler(AuthException::class)
-    fun handleAuthException(e: AuthException): ResponseEntity<Any>{
+    fun handleAuthException(e: AuthException): ResponseEntity<Any> {
         return ResponseEntity.status(403).body(
                 Response(
                         403,
@@ -59,8 +60,22 @@ class ExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ResponseStatusException::class)
+    fun handleDefaultException(e: ResponseStatusException): ResponseEntity<Any> {
+        return ResponseEntity.status(e.status)
+                .headers(e.responseHeaders)
+                .body(
+                        Response(
+                                e.status.value(),
+                                false,
+                                e.localizedMessage,
+                                null
+                        )
+                )
+    }
+
     @ExceptionHandler(Exception::class)
-    fun handleOtherException(e: Exception): ResponseEntity<Any>{
+    fun handleOtherException(e: Exception): ResponseEntity<Any> {
         logger.error(e.stackTraceString)
         return ResponseEntity.status(500).body(
                 Response(
