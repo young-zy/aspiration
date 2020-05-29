@@ -27,8 +27,13 @@ class PlanService {
     @Autowired
     private lateinit var transactionalOperator: TransactionalOperator
 
+    @Autowired
+    private lateinit var loginService: LoginService
+
     @Transactional
     suspend fun updatePlan(token: String, planFile: MultipartFile) {
+        val tokenObj = loginService.getToken(token)
+        loginService.hasAuth(tokenObj, listOf(AuthEnum.SCHOOL_ADMIN))
         val inputStream = planFile.inputStream
         withContext(Dispatchers.IO) {
             val workBook = WorkbookFactory.create(inputStream)
