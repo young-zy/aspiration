@@ -8,11 +8,11 @@ import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
-import org.springframework.web.multipart.MultipartFile
+import java.io.File
 
 @Service
 class PlanService {
@@ -30,12 +30,13 @@ class PlanService {
     @Autowired
     private lateinit var loginService: LoginService
 
-    @Transactional
-    suspend fun updatePlan(token: String, planFile: MultipartFile) {
+    suspend fun updatePlan(token: String, planFile: FilePart) {
         val tokenObj = loginService.getToken(token)
         loginService.hasAuth(tokenObj, listOf(AuthEnum.SCHOOL_ADMIN))
-        val inputStream = planFile.inputStream
         withContext(Dispatchers.IO) {
+            val file: File = File.createTempFile("temp", null)
+            planFile.transferTo(file)
+            val inputStream = file.inputStream()
             val workBook = WorkbookFactory.create(inputStream)
             val sheet = workBook.getSheetAt(0)
             val school: String = sheet.getRow(1).getCell(0).stringCellValue
@@ -55,6 +56,7 @@ class PlanService {
                     planNativeRepository.insertPlan(plan)
                 }
                 logger.info("$school 新纪录已保存")
+                file.delete()
             }
         }
     }

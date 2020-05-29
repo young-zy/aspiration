@@ -1,7 +1,7 @@
 package com.young_zy.aspiration.repo
 
 import com.young_zy.aspiration.model.PlanEntity
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.data.relational.core.query.Criteria.where
@@ -19,7 +19,7 @@ class PlanNativeRepository {
                 .from("plan")
                 .matching(where("school").`is`(school))
                 .then()
-                .awaitSingle()
+                .awaitFirstOrNull()
     }
 
     suspend fun insertPlan(plan: PlanEntity): Void? {
@@ -28,6 +28,6 @@ class PlanNativeRepository {
                 .into(PlanEntity::class.java)
                 .using(plan)
                 .then()
-                .awaitSingle()
+                .awaitFirstOrNull()
     }
 }
